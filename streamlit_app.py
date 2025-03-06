@@ -11,6 +11,7 @@ import streamlit.components.v1 as components
 import gspread
 from google.oauth2.service_account import Credentials
 
+
 # ----- Helper Function for Video Display -----
 def get_video_html(video_path, width):
     try:
@@ -146,12 +147,24 @@ if name:
                 "https://www.googleapis.com/auth/drive.file",
                 "https://www.googleapis.com/auth/drive"
             ]
+<<<<<<< HEAD
+            # Load credentials from secrets
+            creds_data = st.secrets["gcp_service_account"]
+            creds = Credentials.from_service_account_info(creds_data)
+=======
             creds = Credentials.from_service_account_file("./quntitative-depth-estimation-b927cbf8ca78.json", scopes=scope)
+>>>>>>> 202dc67696f4eb98c9a3320bb352152d0152704f
             client = gspread.authorize(creds)
+
+            # Now you can use client to access your Google Sheet
+            sheet = client.open("Quantitative_assesment").sheet1
             
+<<<<<<< HEAD
+=======
             # Open your Google Sheet by name
             sheet = client.open("Quantitative_assesment").sheet1  # change to your sheet name
             
+>>>>>>> 202dc67696f4eb98c9a3320bb352152d0152704f
             # Prepare row data (order should match your sheet header)
             row_data = [
                 name,
