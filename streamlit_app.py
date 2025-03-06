@@ -142,16 +142,12 @@ if name:
         # ----- Google Sheets Setup -----
         try:
             scope = [
-                "https://spreadsheets.google.com/feeds",
                 "https://www.googleapis.com/auth/spreadsheets",
-                "https://www.googleapis.com/auth/drive.file",
                 "https://www.googleapis.com/auth/drive"
             ]
-            # Load credentials from secrets
             creds_data = st.secrets["gcp_service_account"]
-            creds = Credentials.from_service_account_info(creds_data)
+            creds = Credentials.from_service_account_info(creds_data, scopes=scope)
             client = gspread.authorize(creds)
-
             # Now you can use client to access your Google Sheet
             sheet = client.open("Quantitative_assesment").sheet1
             
