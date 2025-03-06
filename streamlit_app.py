@@ -11,9 +11,11 @@ import streamlit.components.v1 as components
 import gspread
 from google.oauth2.service_account import Credentials
 
+# Set page layout to wide for responsiveness
+st.set_page_config(layout="wide")
 
 # ----- Helper Function for Video Display -----
-def get_video_html(video_path, width):
+def get_video_html(video_path, max_width):
     try:
         with open(video_path, "rb") as f:
             video_bytes = f.read()
@@ -21,8 +23,16 @@ def get_video_html(video_path, width):
     except Exception as e:
         st.error(f"Error loading video: {e}")
         return ""
+    # Use inline CSS to ensure responsiveness: full width (up to max_width pixels)
     video_html = f"""
-    <video width="{width}" controls>
+    <style>
+      .responsive-video {{
+        width: 100%;
+        max-width: {max_width}px;
+        height: auto;
+      }}
+    </style>
+    <video class="responsive-video" controls>
       <source src="data:video/mp4;base64,{encoded_video}" type="video/mp4">
       Your browser does not support the video tag.
     </video>
@@ -53,7 +63,7 @@ if clinician == "Yes":
 name = st.text_input("Please enter your name")
 
 # ----- Video Display Settings -----
-VIDEO_WIDTH = 640  # adjust video width here
+VIDEO_MAX_WIDTH = 640  # Maximum width in pixels; video will scale responsively
 
 # ----- Video Paths -----
 video_paths = [
@@ -73,6 +83,7 @@ video_paths = [
 if "question_index" not in st.session_state:
     st.session_state["question_index"] = 0
 if "responses" not in st.session_state:
+    # Initialize responses with None
     st.session_state["responses"] = [None] * len(video_paths)
 
 # ----- Questionnaire and Video Display -----
@@ -81,36 +92,47 @@ if name:
     question_index = st.session_state["question_index"]
     st.subheader(f"Question {question_index + 1}")
     
-    # Display video using HTML embed with base64 encoding
+    # Display video using HTML embed with responsive CSS
     video_path = video_paths[question_index]
-    video_html = get_video_html(video_path, VIDEO_WIDTH)
+    video_html = get_video_html(video_path, VIDEO_MAX_WIDTH)
     if video_html:
-        components.html(video_html, height=int(VIDEO_WIDTH * 0.75))
+        # The height is approximate; adjust as needed for your videos
+        components.html(video_html, height=int(VIDEO_MAX_WIDTH * 0.75))
     
+    # Define options with a placeholder as the first option
+    options = ["Select an option", "Left", "Right"]
     existing_response = st.session_state["responses"][question_index]
-    default_index = 0 if existing_response == "Left" else 1 if existing_response == "Right" else None
+    if existing_response in ["Left", "Right"]:
+        default_index = options.index(existing_response)
+    else:
+        default_index = 0  # Placeholder
     
     response = st.radio(
         "Which of the two side videos (left or right) do you think best reflects reality in terms of accuracy in depth estimation?", 
-        ["Left", "Right"], 
+        options, 
         key=f"question_{question_index}",
-        index=default_index if default_index is not None else 0
+        index=default_index
     )
     
-    st.session_state["responses"][question_index] = response
+    # Store the response only if it's a valid selection
+    if response in ["Left", "Right"]:
+        st.session_state["responses"][question_index] = response
+    else:
+        st.session_state["responses"][question_index] = None
     
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Previous") and question_index > 0:
             st.session_state["question_index"] -= 1
-            st.rerun()
+            st.experimental_rerun()
     with col2:
-        if st.button("Next") and question_index < len(video_paths) - 1:
+        # Disable Next if no valid answer has been made
+        if st.button("Next", disabled=(st.session_state["responses"][question_index] is None)) and question_index < len(video_paths) - 1:
             st.session_state["question_index"] += 1
-            st.rerun()
+            st.experimental_rerun()
     
     # ----- Submission Block -----
-    if question_index == len(video_paths) - 1 and st.button("Submit Answers"):
+    if question_index == len(video_paths) - 1 and st.button("Submit Answers", disabled=(st.session_state["responses"][question_index] is None)):
         # Create a folder for JSON responses if it does not exist
         responses_folder = "responses"
         if not os.path.exists(responses_folder):
@@ -148,7 +170,7 @@ if name:
             creds_data = st.secrets["gcp_service_account"]
             creds = Credentials.from_service_account_info(creds_data, scopes=scope)
             client = gspread.authorize(creds)
-            # Now you can use client to access your Google Sheet
+            # Open your Google Sheet (ensure the sheet is shared with your service account)
             sheet = client.open("Quantitative_assesment").sheet1
             
             # Prepare row data (order should match your sheet header)
