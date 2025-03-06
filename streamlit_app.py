@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import os
 import json
+import datetime
+import re
 
 # Title of the app
 st.title("Qualitative Performance Assessment of EndoDAC and Depth Pro Models")
@@ -30,7 +32,7 @@ if clinician == "Yes":
 # Second question: name
 name = st.text_input("Please enter your name")
 
-# Parameter to set video width (adjust this value as needed)
+# Parameter to set video width (adjust as needed)
 VIDEO_WIDTH = 640
 
 # Paths to the videos
@@ -53,7 +55,6 @@ if "question_index" not in st.session_state:
 if "responses" not in st.session_state:
     st.session_state["responses"] = [None] * len(video_paths)
 
-# Proceed if the name is provided
 if name:
     st.header("Questionnaire")
     question_index = st.session_state["question_index"]
@@ -83,9 +84,18 @@ if name:
             st.session_state["question_index"] += 1
             st.experimental_rerun()
     
-    # Save answers when on the last question and the button is clicked
+    # Save answers on the last question when the button is clicked
     if question_index == len(video_paths) - 1 and st.button("Submit Answers"):
-        file_path = "responses.json"
+        # Create a folder for responses if it does not exist
+        responses_folder = "responses"
+        if not os.path.exists(responses_folder):
+            os.makedirs(responses_folder)
+        
+        # Sanitize name for filename (remove problematic characters)
+        safe_name = re.sub(r'[^\w\-_. ]', '_', name).strip()
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{safe_name}_{timestamp}.json"
+        file_path = os.path.join(responses_folder, file_name)
         
         # Prepare the new data entry
         new_data = {
@@ -97,20 +107,8 @@ if name:
         for i in range(len(video_paths)):
             new_data[f"Question {i+1}"] = st.session_state["responses"][i] if st.session_state["responses"][i] else "No Response"
         
-        # Load existing responses if available
-        if os.path.exists(file_path):
-            with open(file_path, "r") as f:
-                try:
-                    responses = json.load(f)
-                except json.JSONDecodeError:
-                    responses = []
-        else:
-            responses = []
-        
-        responses.append(new_data)
-        
         with open(file_path, "w") as f:
-            json.dump(responses, f, indent=4)
+            json.dump(new_data, f, indent=4)
         
         st.success("Your answers have been saved!")
         st.stop()
