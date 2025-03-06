@@ -56,16 +56,16 @@ VIDEO_WIDTH = 640  # adjust video width here
 
 # ----- Video Paths -----
 video_paths = [
-    "./VideoColonoscopy3.mp4",
-    "./VideoColonoscopy4.mp4",
-    "./VideoColonoscopy5.mp4",
-    "./VideoColonoscopy6.mp4",
-    "./VideoColonoscopy7.mp4",
-    "./VideoColonoscopy8.mp4",
-    "./VideoColonoscopy9.mp4",
-    "./VideoColonoscopy10.mp4",
-    "./VideoColonoscopy11.mp4",
-    "./VideoColonoscopy12.mp4",
+    "./videos/VideoColonoscopy3.mp4",
+    "./videos/VideoColonoscopy4.mp4",
+    "./videos/VideoColonoscopy5.mp4",
+    "./videos/VideoColonoscopy6.mp4",
+    "./videos/VideoColonoscopy7.mp4",
+    "./videos/VideoColonoscopy8.mp4",
+    "./videos/VideoColonoscopy9.mp4",
+    "./videos/VideoColonoscopy10.mp4",
+    "./videos/VideoColonoscopy11.mp4",
+    "./videos/VideoColonoscopy12.mp4",
 ]
 
 # ----- Session State Initialization -----
