@@ -54,7 +54,6 @@ video_paths = [
 # Initialize session state
 if "question_index" not in st.session_state:
     st.session_state["question_index"] = 0
-    
 if "responses" not in st.session_state:
     st.session_state["responses"] = [None] * len(video_paths)
 
@@ -116,4 +115,10 @@ if name:
             "Procedures Performed": procedures_performed if clinician == "Yes" else None,
         }
         for i in range(len(video_paths)):
-            new_data[f"Question {i+1}"] = st.session_state["responses"][i] if st.session_state["responses"][i] el
+            new_data[f"Question {i+1}"] = st.session_state["responses"][i] if st.session_state["responses"][i] else "No Response"
+        
+        with open(file_path, "w") as f:
+            json.dump(new_data, f, indent=4)
+        
+        st.success("Your answers have been saved!")
+        st.stop()
