@@ -38,21 +38,23 @@ VIDEO_WIDTH = 640
 
 # Paths to the videos
 video_paths = [
-    "./VideoColonoscopy3.mp4",
-    "./VideoColonoscopy4.mp4",
-    "./VideoColonoscopy5.mp4",
-    "./VideoColonoscopy6.mp4",
-    "./VideoColonoscopy7.mp4",
-    "./VideoColonoscopy8.mp4",
-    "./VideoColonoscopy9.mp4",
-    "./VideoColonoscopy10.mp4",
-    "./VideoColonoscopy11.mp4",
-    "./VideoColonoscopy12.mp4",
+    "./videos/VideoColonoscopy3.mp4",
+    "./videos/VideoColonoscopy4.mp4",
+    "./videos/VideoColonoscopy5.mp4",
+    "./videos/VideoColonoscopy6.mp4",
+    "./videos/VideoColonoscopy7.mp4",
+    "./videos/VideoColonoscopy8.mp4",
+    "./videos/VideoColonoscopy9.mp4",
+    "./videos/VideoColonoscopy10.mp4",
+    "./videos/VideoColonoscopy11.mp4",
+    "./videos/VideoColonoscopy12.mp4",
 ]
+
 
 # Initialize session state
 if "question_index" not in st.session_state:
     st.session_state["question_index"] = 0
+    
 if "responses" not in st.session_state:
     st.session_state["responses"] = [None] * len(video_paths)
 
