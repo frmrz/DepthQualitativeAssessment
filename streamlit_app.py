@@ -4,6 +4,7 @@ import os
 import json
 import datetime
 import re
+import streamlit.components.v1 as components
 
 # Title of the app
 st.title("Qualitative Performance Assessment of EndoDAC and Depth Pro Models")
@@ -37,16 +38,16 @@ VIDEO_WIDTH = 640
 
 # Paths to the videos
 video_paths = [
-    "./videos/VideoColonoscopy3.mp4",
-    "./videos/VideoColonoscopy4.mp4",
-    "./videos/VideoColonoscopy5.mp4",
-    "./videos/VideoColonoscopy6.mp4",
-    "./videos/VideoColonoscopy7.mp4",
-    "./videos/VideoColonoscopy8.mp4",
-    "./videos/VideoColonoscopy9.mp4",
-    "./videos/VideoColonoscopy10.mp4",
-    "./videos/VideoColonoscopy11.mp4",
-    "./videos/VideoColonoscopy12.mp4",
+    "./VideoColonoscopy3.mp4",
+    "./VideoColonoscopy4.mp4",
+    "./VideoColonoscopy5.mp4",
+    "./VideoColonoscopy6.mp4",
+    "./VideoColonoscopy7.mp4",
+    "./VideoColonoscopy8.mp4",
+    "./VideoColonoscopy9.mp4",
+    "./VideoColonoscopy10.mp4",
+    "./VideoColonoscopy11.mp4",
+    "./VideoColonoscopy12.mp4",
 ]
 
 # Initialize session state
@@ -60,7 +61,15 @@ if name:
     question_index = st.session_state["question_index"]
     
     st.subheader(f"Question {question_index + 1}")
-    st.video(video_paths[question_index], width=VIDEO_WIDTH)
+    # Embed video using HTML to control width
+    video_path = video_paths[question_index]
+    video_html = f"""
+    <video width="{VIDEO_WIDTH}" controls>
+      <source src="{video_path}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    """
+    components.html(video_html, height=int(VIDEO_WIDTH * 0.75))
     
     existing_response = st.session_state["responses"][question_index]
     default_index = 0 if existing_response == "Left" else 1 if existing_response == "Right" else None
@@ -105,10 +114,4 @@ if name:
             "Procedures Performed": procedures_performed if clinician == "Yes" else None,
         }
         for i in range(len(video_paths)):
-            new_data[f"Question {i+1}"] = st.session_state["responses"][i] if st.session_state["responses"][i] else "No Response"
-        
-        with open(file_path, "w") as f:
-            json.dump(new_data, f, indent=4)
-        
-        st.success("Your answers have been saved!")
-        st.stop()
+            new_data[f"Question {i+1}"] = st.session_state["responses"][i] if st.session_state["responses"][i] el
