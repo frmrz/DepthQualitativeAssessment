@@ -1,6 +1,7 @@
 import streamlit as st
-import pandas as pd  
+import pandas as pd
 import os
+import json
 
 # Title of the app
 st.title("Qualitative Performance Assessment of EndoDAC and Depth Pro Models")
@@ -29,34 +30,36 @@ if clinician == "Yes":
 # Second question: name
 name = st.text_input("Please enter your name")
 
-# Paths to the videos in the 'videos' folder
+# Parameter to set video width (adjust this value as needed)
+VIDEO_WIDTH = 640
+
+# Paths to the videos
 video_paths = [
-    "./VideoColonoscopy3.mp4",
-    "./VideoColonoscopy4.mp4",
-    "./VideoColonoscopy5.mp4",
-    "./VideoColonoscopy6.mp4",
-    "./VideoColonoscopy7.mp4",
-    "./VideoColonoscopy8.mp4",
-    "./VideoColonoscopy9.mp4",
-    "./VideoColonoscopy10.mp4",
-    "./VideoColonoscopy11.mp4",
-    "./VideoColonoscopy12.mp4",
+    "./videos/VideoColonoscopy3.mp4",
+    "./videos/VideoColonoscopy4.mp4",
+    "./videos/VideoColonoscopy5.mp4",
+    "./videos/VideoColonoscopy6.mp4",
+    "./videos/VideoColonoscopy7.mp4",
+    "./videos/VideoColonoscopy8.mp4",
+    "./videos/VideoColonoscopy9.mp4",
+    "./videos/VideoColonoscopy10.mp4",
+    "./videos/VideoColonoscopy11.mp4",
+    "./videos/VideoColonoscopy12.mp4",
 ]
 
-# Session state
+# Initialize session state
 if "question_index" not in st.session_state:
     st.session_state["question_index"] = 0
 if "responses" not in st.session_state:
     st.session_state["responses"] = [None] * len(video_paths)
 
-# If the user has entered the name, proceed with the questionnaire
+# Proceed if the name is provided
 if name:
     st.header("Questionnaire")
-    
     question_index = st.session_state["question_index"]
     
     st.subheader(f"Question {question_index + 1}")
-    st.video(video_paths[question_index])  # Here we use the relative video path
+    st.video(video_paths[question_index], width=VIDEO_WIDTH)
     
     existing_response = st.session_state["responses"][question_index]
     default_index = 0 if existing_response == "Left" else 1 if existing_response == "Right" else None
@@ -70,42 +73,44 @@ if name:
     
     st.session_state["responses"][question_index] = response
     
-    col1, col2 = st.columns([1, 1])
+    col1, col2 = st.columns(2)
     with col1:
         if st.button("Previous") and question_index > 0:
             st.session_state["question_index"] -= 1
-            st.rerun()
+            st.experimental_rerun()
     with col2:
         if st.button("Next") and question_index < len(video_paths) - 1:
             st.session_state["question_index"] += 1
-            st.rerun()
+            st.experimental_rerun()
     
-    # Save answers in the excel file
+    # Save answers when on the last question and the button is clicked
     if question_index == len(video_paths) - 1 and st.button("Submit Answers"):
-        file_path = "responses.xlsx"
+        file_path = "responses.json"
         
-        # Create the dictionary for the data row
+        # Prepare the new data entry
         new_data = {
             "Name": name,
             "Clinician": clinician,
             "Experience Level": experience_level if clinician == "Yes" else None,
             "Procedures Performed": procedures_performed if clinician == "Yes" else None,
         }
-
-        # Add the responses to the dictionary
         for i in range(len(video_paths)):
             new_data[f"Question {i+1}"] = st.session_state["responses"][i] if st.session_state["responses"][i] else "No Response"
-
-        df_new = pd.DataFrame([new_data])  # Create the DataFrame from the list of dictionaries
-
-        # If the file exists, load it and append the new data
-        if os.path.exists(file_path):
-            df_existing = pd.read_excel(file_path)
-            df_final = pd.concat([df_existing, df_new], ignore_index=True)
-        else:
-            df_final = df_new
         
-        df_final.to_excel(file_path, index=False)
+        # Load existing responses if available
+        if os.path.exists(file_path):
+            with open(file_path, "r") as f:
+                try:
+                    responses = json.load(f)
+                except json.JSONDecodeError:
+                    responses = []
+        else:
+            responses = []
+        
+        responses.append(new_data)
+        
+        with open(file_path, "w") as f:
+            json.dump(responses, f, indent=4)
+        
         st.success("Your answers have been saved!")
-
         st.stop()
